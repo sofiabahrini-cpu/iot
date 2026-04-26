@@ -6,25 +6,24 @@ Lance avec: python server.py
 
 from flask import Flask, request, jsonify
 import sqlite3
-import os
 from datetime import datetime
 
 app = Flask(__name__)
 
 DB_PATH = "iot_data.db"
-SECURITY_KEY = "123456"  # Même clé que dans le code ESP32
+SECURITY_KEY = "123456"
 
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     conn.execute("""
         CREATE TABLE IF NOT EXISTS readings (
-            id        INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT    NOT NULL,
-            temp      REAL,
-            hum       REAL,
-            press     REAL,
-            volt      REAL,
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp  TEXT    NOT NULL,
+            temp       REAL,
+            hum        REAL,
+            press      REAL,
+            volt       REAL,
             current_ma REAL
         )
     """)
@@ -33,17 +32,13 @@ def init_db():
 
 
 def get_sleep_seconds():
-    """
-    Retourne la durée de sommeil dynamique (en secondes).
-    Tu peux adapter cette logique selon l'heure, la tension, etc.
-    """
     hour = datetime.now().hour
     if 0 <= hour < 6:
-        return 300   # Nuit : mesure toutes les 5 min
+        return 300
     elif 6 <= hour < 22:
-        return 60    # Journée : toutes les 60 s
+        return 60
     else:
-        return 120   # Soirée : toutes les 2 min
+        return 120
 
 
 @app.route("/update", methods=["POST"])
@@ -58,7 +53,7 @@ def update():
 
     conn = sqlite3.connect(DB_PATH)
     conn.execute(
-        "INSERT INTO readings (timestamp, temp, hum, volt, current_ma) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO readings (timestamp, temp, hum, press, volt, current_ma) VALUES (?, ?, ?, ?, ?, ?)",
         (
             datetime.now().isoformat(),
             data.get("temp"),
@@ -74,6 +69,7 @@ def update():
     sleep_s = get_sleep_seconds()
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Reçu → "
           f"T={data.get('temp'):.1f}°C  H={data.get('hum'):.1f}%  "
+          f"P={data.get('press'):.1f}hPa  "
           f"V={data.get('volt'):.2f}V  I={data.get('mA'):.1f}mA  "
           f"→ sleep={sleep_s}s")
 
