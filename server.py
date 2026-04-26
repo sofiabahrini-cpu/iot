@@ -23,6 +23,7 @@ def init_db():
             timestamp TEXT    NOT NULL,
             temp      REAL,
             hum       REAL,
+            press     REAL,
             volt      REAL,
             current_ma REAL
         )
@@ -62,6 +63,7 @@ def update():
             datetime.now().isoformat(),
             data.get("temp"),
             data.get("hum"),
+            data.get("press"),
             data.get("volt"),
             data.get("mA"),
         ),
